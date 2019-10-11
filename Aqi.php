@@ -33,9 +33,7 @@ class Aqi
 	}
 
 	public function getLocationData($location_id, $unit = false){
-		$location = $this->location[$location_id];
-		$aqi = $this->data[$location];
-
+		$aqi = $this->data[$location_id];
 		if($unit) $aqi = $this->setUnit($aqi);
 
 		return $aqi;
@@ -56,11 +54,11 @@ class Aqi
 	private function getData(){
 		$curl = curl_init();
 
-        curl_setopt($curl, CURLOPT_URL, $this->url);
+		curl_setopt($curl, CURLOPT_URL, $this->url);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 
-        $aqi = curl_exec($curl);
+		$aqi = curl_exec($curl);
 		curl_close($curl);
 		
 		$aqi = json_decode($aqi, true, JSON_UNESCAPED_UNICODE);
@@ -70,10 +68,13 @@ class Aqi
 
 	private function setData(){
 		$aqi = [];
-		foreach($this->data as $val){
-			$location = $val['County'] . '-' . $val['SiteName'];
-			$this->location[] = $location;
-			$aqi[$location] = array_intersect_key($val, $this->factor);
+
+		$len = count($this->data);
+		for($i = 0; $i < $len; $i++){
+			$index = $i + 1;
+			$arr = $this->data[$i];
+			$this->location[$index] = ($arr['County'] . '-' . $arr['SiteName']);
+			$aqi[$index] = array_intersect_key($arr, $this->factor);
 		}
 
 		$this->data = $aqi;
